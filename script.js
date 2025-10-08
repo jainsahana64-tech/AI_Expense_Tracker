@@ -1290,36 +1290,84 @@ function getSavingsData() {
 
 // Export to Excel format
 function exportToExcel() {
-    // Combine expenses, income, and smart insights data
-    let csvContent = "Date,Description,Category/Source/Type,Amount,Type\n";
+    // Create a new workbook
+    const wb = XLSX.utils.book_new();
     
-    // Add expenses
-    expenses.forEach(expense => {
-        csvContent += `"${expense.date}","${expense.description}","${expense.category}",${expense.amount},Expense\n`;
-    });
+    // Create expenses worksheet
+    if (expenses.length > 0) {
+        // Transform expenses data for worksheet
+        const expensesData = expenses.map(expense => ({
+            Date: expense.date,
+            Description: expense.description,
+            Category: expense.category,
+            Amount: expense.amount
+        }));
+        
+        const ws1 = XLSX.utils.json_to_sheet(expensesData);
+        XLSX.utils.book_append_sheet(wb, ws1, "Expenses");
+    } else {
+        // Create empty expenses sheet
+        const ws1 = XLSX.utils.aoa_to_sheet([["No expenses recorded"]]);
+        XLSX.utils.book_append_sheet(wb, ws1, "Expenses");
+    }
     
-    // Add income
-    income.forEach(entry => {
-        csvContent += `"${entry.date}","${entry.source}","Income",${entry.amount},Income\n`;
-    });
+    // Create income worksheet
+    if (income.length > 0) {
+        // Transform income data for worksheet
+        const incomeData = income.map(entry => ({
+            Date: entry.date,
+            Source: entry.source,
+            Amount: entry.amount
+        }));
+        
+        const ws2 = XLSX.utils.json_to_sheet(incomeData);
+        XLSX.utils.book_append_sheet(wb, ws2, "Income");
+    } else {
+        // Create empty income sheet
+        const ws2 = XLSX.utils.aoa_to_sheet([["No income recorded"]]);
+        XLSX.utils.book_append_sheet(wb, ws2, "Income");
+    }
     
-    // Add smart insights
-    smartInsights.forEach(insight => {
-        // Clean the content for CSV (remove newlines and quotes)
-        const cleanContent = insight.content.replace(/[\r\n]+/g, ' ').replace(/"/g, '""');
-        csvContent += `"${insight.date}","${cleanContent}","${insight.type}",,Insight\n`;
-    });
+    // Create smart insights worksheet
+    if (smartInsights.length > 0) {
+        // Transform insights data for worksheet
+        const insightsData = smartInsights.map(insight => ({
+            Date: insight.date,
+            Type: insight.type,
+            Content: insight.content
+        }));
+        
+        const ws3 = XLSX.utils.json_to_sheet(insightsData);
+        XLSX.utils.book_append_sheet(wb, ws3, "Smart Insights");
+    } else {
+        // Create empty insights sheet
+        const ws3 = XLSX.utils.aoa_to_sheet([["No smart insights available"]]);
+        XLSX.utils.book_append_sheet(wb, ws3, "Smart Insights");
+    }
     
-    // Create download link with .xlsx extension
-    const blob = new Blob([csvContent], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet;charset=utf-8;' });
-    const url = URL.createObjectURL(blob);
-    const link = document.createElement("a");
-    link.setAttribute("href", url);
-    link.setAttribute("download", "expense_tracker_data.xlsx");
-    link.style.visibility = 'hidden';
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
+    // Create summary worksheet
+    const totalIncome = income.reduce((sum, entry) => sum + entry.amount, 0);
+    const totalExpenses = expenses.reduce((sum, expense) => sum + expense.amount, 0);
+    const netSavings = totalIncome - totalExpenses;
+    
+    const summaryData = [
+        ["Summary", ""],
+        ["Total Income", `₹${totalIncome.toFixed(2)}`],
+        ["Total Expenses", `₹${totalExpenses.toFixed(2)}`],
+        ["Net Savings", `₹${netSavings.toFixed(2)}`]
+    ];
+    
+    if (monthlyBudget > 0) {
+        const remaining = monthlyBudget - totalExpenses;
+        summaryData.push(["Monthly Budget", `₹${monthlyBudget.toFixed(2)}`]);
+        summaryData.push(["Budget Remaining", `₹${remaining.toFixed(2)}`]);
+    }
+    
+    const ws4 = XLSX.utils.aoa_to_sheet(summaryData);
+    XLSX.utils.book_append_sheet(wb, ws4, "Summary");
+    
+    // Export the workbook
+    XLSX.writeFile(wb, "expense_tracker_data.xlsx");
     
     showNotification('Data exported as Excel successfully!', 'success');
 }
