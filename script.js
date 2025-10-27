@@ -7,6 +7,7 @@ const suggestionsContainer = document.getElementById('suggestions-container');
 const sessionInfo = document.getElementById('session-info');
 const budgetAmountInput = document.getElementById('budget-amount');
 const setBudgetBtn = document.getElementById('set-budget-btn');
+const resetBudgetBtn = document.getElementById('reset-budget-btn');
 const incomeForm = document.getElementById('income-form');
 const incomeContainer = document.getElementById('income-container');
 const incomeAmountInput = document.getElementById('income-amount');
@@ -19,7 +20,6 @@ const exportCsvBtn = document.getElementById('export-csv');
 const exportExcelBtn = document.getElementById('export-excel');
 const splitExpenseCheckbox = document.getElementById('split-expense');
 const splitExpenseGroup = document.getElementById('split-expense-group');
-const addCategoryBtn = document.getElementById('add-category-btn');
 const categorySelect = document.getElementById('category');
 
 // AI Analysis Button
@@ -75,10 +75,13 @@ document.addEventListener('DOMContentLoaded', function() {
     incomeForm.addEventListener('submit', handleIncomeFormSubmit);
     goalForm.addEventListener('submit', handleGoalFormSubmit);
     setBudgetBtn.addEventListener('click', setBudget);
+    if (resetBudgetBtn) {
+        resetBudgetBtn.addEventListener('click', resetBudget);
+    }
     exportCsvBtn.addEventListener('click', exportToExcel);
     exportExcelBtn.addEventListener('click', exportToTextFile);
     splitExpenseCheckbox.addEventListener('change', toggleSplitExpense);
-    addCategoryBtn.addEventListener('click', showAddCategory);
+    categorySelect.addEventListener('change', handleCategoryChange);
     
     // Add event listener for AI analysis button
     if (aiAnalyzeBtn) {
@@ -229,10 +232,25 @@ function showAddCategory() {
             customCategories.push(categoryName);
             saveData();
             updateCategorySelect();
+            // Select the newly added category
+            categorySelect.value = categoryName;
             showNotification(`Category "${categoryName}" added successfully!`, 'success');
         } else {
+            // Reset to default selection
+            categorySelect.value = '';
             showNotification('Category already exists!', 'warning');
         }
+    } else if (newCategory !== null) {
+        // Reset to default selection if user cancelled but didn't select a category
+        categorySelect.value = '';
+    }
+}
+
+// Handle category selection change
+function handleCategoryChange(e) {
+    if (e.target.value === 'add-new-category') {
+        // Show add category prompt
+        showAddCategory();
     }
 }
 
@@ -258,11 +276,17 @@ function updateCategorySelect() {
         option.textContent = category;
         categorySelect.appendChild(option);
     });
+    
+    // Add "Add New Category" option
+    const addNewOption = document.createElement('option');
+    addNewOption.value = 'add-new-category';
+    addNewOption.textContent = '+ Add New Category';
+    categorySelect.appendChild(addNewOption);
 }
 
 // Get default categories
 function getDefaultCategories() {
-    return ['Food', 'Travel', 'Entertainment', 'Utilities', 'Healthcare', 'Shopping', 'Other'];
+    return ['Food', 'Travel', 'Entertainment', 'Utilities', 'Healthcare', 'Shopping'];
 }
 
 // Handle expense form submission
@@ -279,6 +303,12 @@ function handleExpenseFormSubmit(e) {
     
     if (!category) {
         showNotification('Please select a category', 'warning');
+        return;
+    }
+    
+    // Check if user selected to add a new category
+    if (category === 'add-new-category') {
+        showNotification('Please select a valid category or add a new one', 'warning');
         return;
     }
     
@@ -453,6 +483,28 @@ function setBudget() {
     updateBudgetSummary();
     
     showNotification('Monthly budget set successfully!', 'success');
+}
+
+// Reset monthly budget
+function resetBudget() {
+    if (monthlyBudget === 0) {
+        showNotification('No budget is currently set', 'info');
+        return;
+    }
+    
+    // Confirm with user before resetting
+    if (confirm('Are you sure you want to reset your monthly budget? This will remove your current budget amount.')) {
+        monthlyBudget = 0;
+        saveData();
+        
+        // Keep suggestions container empty
+        suggestionsContainer.innerHTML = '';
+        
+        // Update budget summary display
+        updateBudgetSummary();
+        
+        showNotification('Monthly budget reset successfully!', 'success');
+    }
 }
 
 // Update budget summary display
