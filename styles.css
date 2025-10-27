@@ -189,6 +189,7 @@ section h2::before {
   color: var(--text-primary);
   font-size: 1rem;
   transition: all 0.3s ease;
+  box-sizing: border-box;
 }
 
 .budget-amount input:focus,
@@ -197,6 +198,16 @@ section h2::before {
   outline: none;
   border-color: var(--gold);
   box-shadow: 0 0 0 3px rgba(255, 215, 0, 0.2);
+}
+
+.select-wrapper select {
+  padding: 0.8rem 3rem 0.8rem 1rem;
+  width: 100%;
+  box-sizing: border-box;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 8px;
+  background-color: var(--dark-surface);
+  color: var(--text-primary);
 }
 
 #set-budget-btn {
@@ -213,6 +224,23 @@ section h2::before {
 #set-budget-btn:hover {
   background-color: #ffdf40;
   box-shadow: 0 6px 20px rgba(255, 215, 0, 0.5);
+}
+
+#reset-budget-btn {
+  margin-top: 0.5rem;
+  background-color: var(--danger);
+  color: white;
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+}
+
+#reset-budget-btn:hover {
+  background-color: #ff6666;
+  box-shadow: 0 6px 20px rgba(255, 77, 77, 0.5);
+  transform: translateY(-2px);
 }
 
 /* Budget Summary Styles */
@@ -439,11 +467,24 @@ section h2::before {
   display: grid;
   grid-template-columns: 1fr 1fr;
   gap: 1rem;
+  align-items: start;
 }
 
 .form-group {
   margin-bottom: 1.2rem;
   position: relative;
+}
+
+.form-row .form-group {
+  margin-bottom: 0;
+}
+
+.form-row {
+  margin-bottom: 1.2rem;
+}
+
+.form-group:last-child {
+  margin-bottom: 0;
 }
 
 .form-group label {
@@ -457,10 +498,17 @@ section h2::before {
   position: relative;
   display: flex;
   align-items: center;
+  width: 100%;
 }
 
 .select-wrapper select {
-  padding-right: 3rem;
+  padding: 0.8rem 3rem 0.8rem 1rem;
+  width: 100%;
+  box-sizing: border-box;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 8px;
+  background-color: var(--dark-surface);
+  color: var(--text-primary);
 }
 
 .small-btn {
@@ -479,11 +527,25 @@ section h2::before {
   display: flex;
   align-items: center;
   justify-content: center;
+  z-index: 2;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+  transition: all 0.3s ease;
+}
+
+.small-btn:hover {
+  background-color: #388e3c;
+  transform: translateY(-50%);
+}
+
+.form-group .select-wrapper {
+  min-height: 44px;
 }
 
 .small-btn:hover {
   background-color: #388e3c;
 }
+
+
 
 .submit-btn {
   width: 100%;
